@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Word version="1.0" unicode="ˊ">
+  <Stroke>
+    <Outline>
+		<MoveTo x="1206.61" y="679.87"  />
+		<CubicTo flexible="false" x1="897.495" y1="980.885" x2="549.29" y2="1270.7" x3="309.915" y3="1426.2"  />
+		<CubicTo flexible="false" x1="255.225" y1="1461.73" x2="214.875" y2="1499.965" x3="214.875" y3="1516.255"  />
+		<CubicTo flexible="false" x1="214.875" y1="1553.13" x2="406.615" y2="1735.535" x3="445.375" y3="1735.535"  />
+		<CubicTo flexible="false" x1="489.64" y1="1735.535" x2="1495.09" y2="543.395" x3="1482.675" y3="505.63"  />
+		<CubicTo flexible="false" x1="1464.26" y1="449.62" x2="1404.01" y2="487.65" x3="1206.61" y3="679.87"  />
+    </Outline>
+    <Track>
+      <MoveTo x="326" y="1614" />
+      <MoveTo x="1465" y="482" />
+    </Track>
+  </Stroke>
+</Word>
+
