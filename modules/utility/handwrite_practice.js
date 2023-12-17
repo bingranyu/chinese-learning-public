@@ -9,7 +9,7 @@ var handwrite_practice = function(param){
 	var default_param = {"font_str":null,"wh":100,"stokewidth":null,"stokeCheckwidth":null};
 	this.param = $.extend( {},default_param, param);
 	if(this.param.stokeCheckwidth === null){
-		this.param.stokeCheckwidth = this.param.wh/10;
+		this.param.stokeCheckwidth = this.param.wh/8;
 	}else{
 		this.param.stokeCheckwidth = this.param.stokeCheckwidth;
 	};

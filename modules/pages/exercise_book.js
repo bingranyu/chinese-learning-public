@@ -118,7 +118,7 @@ if(current_exercise_setting===null){
 
 // 操作按鈕
 var control_button_toolbar=$(`
-<div class="btn-toolbar control-button-toolbar" role="toolbar">
+<div class="btn-toolbar control-button-toolbar" role="toolbar" style="z-index:999;">
 	<div class="btn-group-vertical control_button_group" role="group">
 	  <button type="button" class="drag btn btn-outline-primary active"><i class="fa-regular fa-hand"></i></button>
 	  <button type="button" class="pen btn btn-outline-primary"><i class="fa-solid fa-pencil"></i></button>
@@ -237,7 +237,7 @@ var trash_page_temp = (id,title,words) =>`
 
 
 var parents_button_group= $(`
-<div class="btn-group-vertical parents_button_group" role="group" aria-label="Vertical button group">
+<div class="btn-group-vertical parents_button_group" role="group" aria-label="Vertical button group"  style="z-index:999;">
 	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit_exercise_book">
 	  <i class="fa-solid fa-book-bookmark"></i>
 	</button>
