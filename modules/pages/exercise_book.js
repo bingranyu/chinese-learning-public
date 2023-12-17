@@ -517,7 +517,7 @@ var on_complete = function(){
 		let card_el = $(e.currentTarget).closest(".card");
 		let book_id = card_el.attr("book_id");
 		let book_data = JSON.parse(Storage.getItem("exercise_book/exercise_words")).filter((v)=>v['id']==book_id)[0];
-		console.log(book_data);
+		console.log(book_id,JSON.parse(Storage.getItem("exercise_book/exercise_words")));
 
 		let word_list = book_data['words'];
 		let stroke_times=$("#stroke_times").val();
