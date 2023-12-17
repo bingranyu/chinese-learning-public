@@ -13,12 +13,10 @@ var style = $(`
 	table.exercise_student_table {
 		white-space:nowrap;
 	}
-
 	table.exercise_student_table,table.exercise_student_table tr,table.exercise_student_table th,table.exercise_student_table td {
 	  border: solid 1px black;
 	  padding: 0px;
 	}
-
 	table.exercise_student_table .word.is_symbol_0 {
 	  width:2cm;
 	  height:2cm;
@@ -30,11 +28,9 @@ var style = $(`
 	table.exercise_student_table th, .exercise_student_table td {
 	  display: inline-block;
 	}
-
 	table.exercise_student_table td {
 	  position: relative;
 	}
-
 	.write_control_layer {
 		width: 100%;
 		height: 100%;
@@ -43,39 +39,33 @@ var style = $(`
 		left: 0px;
 		display: block;
 	}
-
 	.exercise_block {
 		width: fit-content;
 		padding: 20px 20px 50px 50px;
 		margin-left: auto;
 		background-color: #fff;
 	}
-
 	.control-button-toolbar {
 		position: fixed;
 		left: 5px;
 		top: 5px;
 		background-color: #fff;
 	}
-
 	.parents_button_group {
 		position: fixed;
 		left: 5px;
 		bottom: 5px;
 		background-color: #fff;
 	}
-
 	.exercise_page_area, .trash_page_area {
 		margin-bottom: 15px;
 		padding: 10px;
 		border: 1px solid #aaa;
 		border-radius: 5px;
 	}
-
 	.exercise_page_card {
 		margin-bottom: 10px;
 	}
-	
 	.exercise_page {
 		position: relative;
 	}
@@ -85,7 +75,6 @@ var style = $(`
 		left: 0px;
 		z-index: 2;
 	}
-
 	.exercise_student_page {
 		position: relative;
 		left: 0px;
@@ -96,25 +85,59 @@ var style = $(`
 style.attr("mod_type","page_mod");
 
 
-// 儲存規劃:
-// exercise_book/exercise_words: [{"id":int,"words":[str]}]
-// exercise_book/current_progress : [{id:int,...}] TBD
+// 儲存使用 Indexeddb
+var exercise_book_db_request;
+(function(){
+	if (!('indexedDB' in window)) {
+		console.log('瀏覽器不支援IndexedDB，所有變更、下載無法儲存')
+		return;
+	};
+	exercise_book_db_request = idb.openDB('exercise_book', 1,{
+		upgrade(upgradeDb){
+			if (!upgradeDb.objectStoreNames.contains('words')) {
+				upgradeDb.createObjectStore('words', { keyPath: 'id', autoIncrement: true });
+			};
+		}
+	});
+})();
+
+var get_words_list_fromDB = function(){
+	return exercise_book_db_request.then((db)=>{
+		const tx = db.transaction('words', 'readonly');
+		return tx.store.getAll();
+	});
+};
+
+var add_new_word_toDB = function(data){
+	return exercise_book_db_request.then((db)=>{
+		const tx = db.transaction('words', 'readwrite');
+		data['upd_date'] = new Date().getTime();
+		let r = tx.store.add(data);
+		tx.done;
+		return r;
+	});
+};
+
+var update_words_byID_toDB = function(data){
+	return exercise_book_db_request.then((db)=>{
+		const tx = db.transaction('words', 'readwrite');
+		data['upd_date'] = new Date().getTime();
+		let r = tx.store.put( data);
+		tx.done;
+		return r;
+	});
+};
+
+var get_words_byID_fromDB = function(id){
+	return exercise_book_db_request.then((db)=>{
+		const tx = db.transaction('words', 'readonly');
+		return tx.store.get(id);
+	});
+};
+
+
 var Storage = window.localStorage;
 
-var current_exercise_words = Storage.getItem("exercise_book/exercise_words");
-var default_words = JSON.stringify([{"id":1,"trash_date":null,"title":"未命名練習簿","words":["小船","出口","花園","老虎","月曆","左右","日出"]}]);
-if(current_exercise_words===null){
-	Storage.setItem("exercise_book/exercise_words",default_words);
-	var max_book_id = 1;
-}else{
-	var max_book_id = Math.max(...JSON.parse(current_exercise_words).map(a => a.id));
-};
-
-var default_setting = JSON.stringify({"exercise_font_size":2,"stroke_times":2,"write_times":3});
-var current_exercise_setting = Storage.getItem("exercise_book/exercise_setting");
-if(current_exercise_setting===null){
-	Storage.setItem("exercise_book/exercise_setting",default_setting);
-};
 
 // 操作按鈕
 var control_button_toolbar=$(`
@@ -130,8 +153,6 @@ var control_button_toolbar=$(`
 
 
 var exercise_block = $("<div class='exercise_block'></div>");
-
-
 
 var edit_exercise_book_modal = $(`<div class="modal fade" id="edit_exercise_book" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -248,6 +269,7 @@ var parents_button_group= $(`
 	<label class="btn btn-outline-primary" for="teacher_mode_toggle"><i class="fa-solid fa-person-chalkboard"></i></label>
 </div>`);
 
+/*
 var get_excerce_book_data_fn = function(){
 	let visible_data = [...$("#edit_exercise_book .exercise_page_area").find(".exercise_page")].map(function(v){
 		let id = $(v).attr("book_id");
@@ -262,24 +284,24 @@ var get_excerce_book_data_fn = function(){
 	data_array = [...new Map(data_array.reverse().map(item => [item['id'], item])).values()].reverse();
 	return data_array;
 };
-
+*/
 
 
 
 var refresh_book_editor_fn = function(){
-	let exercise_words = JSON.parse(Storage.getItem("exercise_book/exercise_words")).filter((v)=>v.trash_date===null);
-	let exercise_page_area_el = edit_exercise_book_modal.find(".exercise_page_area");
-	exercise_page_area_el.html('');
-	for(let i=0;i<exercise_words.length;i++){
-		exercise_page_area_el.append(exercise_page_temp(exercise_words[i].id,exercise_words[i].title,exercise_words[i].words));
-	};
-	
-	let trash_words = JSON.parse(Storage.getItem("exercise_book/exercise_words")).filter((v)=>v.trash_date!==null);
-	let trash_page_area_el = edit_exercise_book_modal.find(".trash_page_area");
-	trash_page_area_el.html('');
-	for(let i=0;i<trash_words.length;i++){
-		trash_page_area_el.append(trash_page_temp(trash_words[i].id,trash_words[i].title,trash_words[i].words));
-	};
+	get_words_list_fromDB().then(function(word_list){
+		let exercise_page_area_el = edit_exercise_book_modal.find(".exercise_page_area");
+		exercise_page_area_el.html('');
+		let trash_page_area_el = edit_exercise_book_modal.find(".trash_page_area");
+		trash_page_area_el.html('');
+		for(var i=0;i<word_list.length;i++){
+			if(word_list[i]['is_deleted']){
+				trash_page_area_el.append(trash_page_temp(word_list[i]['id'],word_list[i]['title'],word_list[i]['words']));
+			}else{
+				exercise_page_area_el.append(exercise_page_temp(word_list[i]['id'],word_list[i]['title'],word_list[i]['words']));
+			};
+		};
+	});
 };
 
 
@@ -478,31 +500,36 @@ var on_complete = function(){
 
 
 	edit_exercise_book_modal.find(".add_exercise_page").on('click',function(e){
-		max_book_id++;
-		$("#edit_exercise_book .exercise_page_area").append(exercise_page_temp(max_book_id,"新練習簿",""));
+		add_new_word_toDB({"title":"新練習簿","words":"","is_deleted":false}).then((new_id)=>{
+			$("#edit_exercise_book .exercise_page_area").append(exercise_page_temp(new_id,"新練習簿",""));
+		});	
 	});
 
 
 	edit_exercise_book_modal.on('click', "button.remove_exercise_page, button.undo-delete",function(e){
-		let card_el = $(e.currentTarget).closest(".card");
-		let book_id = card_el.attr("book_id");
-		let current_book_data = get_excerce_book_data_fn();
-		if($(e.currentTarget).hasClass('remove_exercise_page')){
-			let current_dt = new Date();
-			const offset = current_dt.getTimezoneOffset();
-			current_dt = new Date(current_dt.getTime() - (offset*60*1000)).toISOString().split('T')[0];
-			current_book_data.filter((v)=>v["id"]==book_id)[0]["trash_date"] = current_dt;
-		}else if($(e.currentTarget).hasClass('undo-delete')){
-			current_book_data.filter((v)=>v["id"]==book_id)[0]["trash_date"] = null;
-		};
-		Storage.setItem("exercise_book/exercise_words",JSON.stringify(current_book_data));
-		card_el.fadeOut(100);
+		console.log(e);
+		var card_el = $(e.currentTarget).closest(".card");
+		let book_id = parseInt(card_el.attr("book_id"));
+		get_words_byID_fromDB(book_id).then((data)=>{
+			data["is_deleted"] = $(e.currentTarget).hasClass('remove_exercise_page');
+			update_words_byID_toDB(data).then((d)=>{
+				refresh_book_editor_fn();				
+			});
+		});
 	});
 
 
 	edit_exercise_book_modal.on('input','textarea.exercise_words, p.book_title',function(e){
-		let current_book_data = get_excerce_book_data_fn();
-		Storage.setItem("exercise_book/exercise_words",JSON.stringify(current_book_data));
+		var card_el = $(e.currentTarget).closest(".card");
+		var words = card_el.find(".exercise_words").val();
+		var title = card_el.find(".book_title").text();
+		
+		let book_id = parseInt(card_el.attr("book_id"));
+		get_words_byID_fromDB(book_id).then((data)=>{
+			data["words"] = words;
+			data["title"] = title;
+			update_words_byID_toDB(data);
+		});
 	});
 	
 	edit_exercise_book_modal.on('change','#stroke_times, #write_times, #exercise_font_size',function(e){
@@ -515,18 +542,17 @@ var on_complete = function(){
 	
 	edit_exercise_book_modal.on('click','.apply_exercise_page',function(e){
 		let card_el = $(e.currentTarget).closest(".card");
-		let book_id = card_el.attr("book_id");
-		let book_data = JSON.parse(Storage.getItem("exercise_book/exercise_words")).filter((v)=>v['id']==book_id)[0];
-
-
-		let word_list = book_data['words'];
-		let stroke_times=$("#stroke_times").val();
-		let write_times=$("#write_times").val();
-		let exercise_font_size = $("#exercise_font_size").val();
-		let exercise_page = create_exercise_page(word_list, stroke_times, write_times,exercise_font_size);
-		exercise_block.html('');
-		exercise_page.appendTo(exercise_block).trigger("append");
-		edit_exercise_book_modal_btobj.hide();
+		let book_id = parseInt(card_el.attr("book_id"));
+		get_words_byID_fromDB(book_id).then((data)=>{
+			let word_list = data['words'].split(',');
+			let stroke_times=$("#stroke_times").val();
+			let write_times=$("#write_times").val();
+			let exercise_font_size = $("#exercise_font_size").val();
+			let exercise_page = create_exercise_page(word_list, stroke_times, write_times,exercise_font_size);
+			exercise_block.html('');
+			exercise_page.appendTo(exercise_block).trigger("append");
+			edit_exercise_book_modal_btobj.hide();
+		});
 	});
 	
 	edit_exercise_book_modal_btobj.show();
