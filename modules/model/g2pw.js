@@ -171,7 +171,7 @@ const g2pwWarmup = async () => {
 	var model_dw_promise;
 	model_dw_promise = model_db_request.then(function(model_db){
 		var model_buff_request = model_db.transaction('model', 'readonly').store.get('g2pw_tiny');
-		return model_buff_request.then((model_buff)=>model_buff['model_file']);
+		return model_buff_request.then((model_buff)=>model_buff);
 	}).then((model_buff)=>{
 		if(!model_buff){
 			return makeRequest({
@@ -192,9 +192,9 @@ const g2pwWarmup = async () => {
 				});
 				return model_buff;
 			});
-			console.log(model_dw_promise);
+
 		}else{
-			return model_buff;
+			return model_buff['model_file'];
 		};
 	});
 	
