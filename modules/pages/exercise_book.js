@@ -542,17 +542,7 @@ var on_complete = function(){
 	
 	edit_exercise_book_modal.on('click','.apply_exercise_page',function(e){
 		let card_el = $(e.currentTarget).closest(".card");
-		let book_id = parseInt(card_el.attr("book_id"));
-		get_words_byID_fromDB(book_id).then((data)=>{
-			let word_list = data['words'].split(',');
-			let stroke_times=$("#stroke_times").val();
-			let write_times=$("#write_times").val();
-			let exercise_font_size = $("#exercise_font_size").val();
-			let exercise_page = create_exercise_page(word_list, stroke_times, write_times,exercise_font_size);
-			exercise_block.html('');
-			exercise_page.appendTo(exercise_block).trigger("append");
-			edit_exercise_book_modal_btobj.hide();
-		});
+
 	});
 	
 	edit_exercise_book_modal_btobj.show();
