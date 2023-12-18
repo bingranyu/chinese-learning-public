@@ -3,8 +3,10 @@ import * as hwcanvas_mod from "./create_write_canvas.js";
 import {multiplyMatrices, matrixTranspose2D} from "./utility.js";
 export {handwrite_practice};
 
-//handwrite_practice
 
+
+
+//handwrite_practice
 var handwrite_practice = function(param){
 	var default_param = {"font_str":null,"wh":100,"stokewidth":null,"stokeCheckwidth":null};
 	this.param = $.extend( {},default_param, param);
@@ -86,6 +88,11 @@ handwrite_practice.prototype.checkStoke = function(){
 	var trackstorke = _self.track_coords[_self.current_stoke];
 	var vaild_array = [];
 	var draw_path = _self.hand_write_obj.draw_path[_self.hand_write_obj.draw_path.length-1];
+	
+	let trackstorke_formated = trackstorke.map((t)=>({"coord":t}));
+	console.log(_self.distancepathpath(trackstorke_formated,draw_path));
+	console.log(trackstorke_formated);
+	
 	for(var i=0;i<draw_path.length;i++){
 		let vaild_ele = trackstorke.map((v1)=>Math.sqrt((v1[0]-draw_path[i]["coord"][0])**2+(v1[1]-draw_path[i]["coord"][1])**2)<_self.param.stokeCheckwidth);
 		vaild_array = vaild_array.concat([vaild_ele]);
@@ -210,3 +217,25 @@ handwrite_practice.prototype.reset = function(current_stroke=0){
 		_self.hand_write_obj.draw_enable = true;
 	};
 };
+
+handwrite_practice.prototype.distancepathpath = function(path1, path2) {
+	var _self = this;
+    let sum = 0;
+    for (const i in path1) {
+        let minDist = Number.MAX_SAFE_INTEGER;
+        for (const j in path2) {
+            let dist = Math.sqrt(Math.pow(path1[i].coord[0] - path2[j].coord[0], 2) + Math.pow(path1[i].coord[1] - path2[j].coord[1], 2));
+            if (dist < minDist) minDist = dist;
+        };
+        sum += minDist;
+    };
+    for (const i in path2) {
+        let minDist = Number.MAX_SAFE_INTEGER;
+        for (const j in path1) {
+            let dist = Math.sqrt(Math.pow(path1[j].coord[0] - path2[i].coord[0], 2) + Math.pow(path1[j].coord[1] - path2[i].coord[1], 2));
+            if (dist < minDist) minDist = dist;
+        };
+        sum += minDist;
+    };
+    return sum / (path1.length * path2.length * 2)*(200/_self.param["wh"]);
+}
