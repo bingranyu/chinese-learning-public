@@ -163,3 +163,36 @@ var redraw_path = function(path_list, canvas,linewidth=1, strokestyle='#000000')
 	};
 	
 };
+
+
+// 待測試
+var reduce_path = function(path,abandonFactor=0.05){
+	var slope_arr = [];
+	for(let j=0;j<path.length-1;j++){
+		let {x, y} = path[j], // current point's x and y
+			{x: nx, y: ny} = path[j+1], // next point's x and y
+			dy = (ny - y);
+
+		if(dy === 0) // to check if the denominator is legal or not
+			// in your case, it would not enter here
+			slope_arr.push(Infinity);
+		else
+			slope_arr.push((nx - x) / dy);
+	};
+    let newpath = [];
+	// calculate the abandonRate base on the amount of the original points
+	let abandonRate = path.length * abandonFactor;
+	for(let j=0;j<slope_arr.length-1;j++){
+		let m = slope_arr[j], // this slope
+			nm = slope_arr[j+1]; // next slope
+		let diffRate = Math.abs((m - nm) / m); // calculate the changes of the slope
+
+		// check if the diffRate is greater than abandonRate
+		// or the sign of m not equals the sign of nm
+		// you can try out removing the "sign check part" and see what would happen ;)
+		if(diffRate >= abandonRate || (Math.sign(m) !== Math.sign(nm))){
+			newpath.push(path[j]);
+		}
+	};
+	return newpath;
+}
