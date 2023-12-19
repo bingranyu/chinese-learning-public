@@ -1,9 +1,7 @@
 import * as fontsvg_mod from "./create_svg_font.js";
 import * as hwcanvas_mod from "./create_write_canvas.js";
-import {multiplyMatrices, matrixTranspose2D} from "./utility.js";
+import {multiplyMatrices, matrixTranspose2D, redraw_path} from "./utility.js";
 export {handwrite_practice};
-
-
 
 
 //handwrite_practice
@@ -28,7 +26,7 @@ var handwrite_practice = function(param){
 	
 	// 建立內容
 	//  背景文字
-	this.back_font_obj = new fontsvg_mod.create_svg_font(this.param.font_str,{"color":"#ccc","wh":this.param.wh});
+	this.back_font_obj = new fontsvg_mod.create_svg_font(this.param.font_str,{"color":"#ddd","wh":this.param.wh});
 	this.back_font_obj.back_canvas.position = "absolute";
 	this.back_font_obj.back_canvas.style.top = 0;
 	this.back_font_obj.back_canvas.style.left = 0;
@@ -66,11 +64,14 @@ var handwrite_practice = function(param){
 	
 	// 將 callback 寫入
 	this.hand_write_obj.draw_end_callback = function(){
+		
 		if(_self.checkStoke()){
 			_self.write_path.push(_self.hand_write_obj.draw_path[_self.hand_write_obj.draw_path.length-1]);
 			_self.current_stoke++;
 		};
 		_self.reset(_self.current_stoke);
+		redraw_path(_self.write_path, _self.hand_write_obj.draw_canvas);
+		
 		if(_self.current_stoke == _self.track_coords.length){
 			_self.hand_write_obj.draw_enable = false;
 		}
@@ -90,8 +91,29 @@ handwrite_practice.prototype.checkStoke = function(){
 	var draw_path = _self.hand_write_obj.draw_path[_self.hand_write_obj.draw_path.length-1];
 	
 	let trackstorke_formated = trackstorke.map((t)=>({"coord":t}));
-	console.log(_self.distancepathpath(trackstorke_formated,draw_path));
-	console.log(trackstorke_formated);
+	let path_dist = _self.distancepathpath(trackstorke_formated,draw_path);
+	//console.log("check_path_distance",path_dist);
+	let track_len = _self.pathlength(trackstorke_formated);
+	let draw_len = _self.pathlength(draw_path);
+	//console.log("check_path_length",track_len,draw_len,Math.abs(track_len-draw_len)/track_len);
+	//console.log("check_path_length2",track_len,draw_len,Math.abs(track_len-draw_len));
+	
+	let s_dist = Math.sqrt(Math.pow(trackstorke_formated[0].coord[0] - draw_path[0].coord[0],2)+Math.pow(trackstorke_formated[0].coord[1] - draw_path[0].coord[1],2));
+	let e_dist = Math.sqrt(Math.pow(trackstorke_formated[0].coord[0] - draw_path[draw_path.length-1].coord[0],2)+Math.pow(trackstorke_formated[0].coord[1] - draw_path[draw_path.length-1].coord[1],2));
+	
+	
+	// path_dist*track_len <= 5 or path_dist < 0.15 // 筆畫相似性、及追蹤長度加權
+	// Math.abs(track_len-draw_len) < 10 //差距在格子長寬10%
+	// s_dist < e_dist // 筆畫順序正確
+	var check_result = ((path_dist*track_len <= 5) || (path_dist < 0.15)) && (Math.abs(track_len-draw_len)<10) && (s_dist < e_dist);
+	
+	//console.log(s_dist,e_dist);
+	
+
+	
+	//console.log("check_path_distance2",path_dist*track_len);
+	
+/*
 	
 	for(var i=0;i<draw_path.length;i++){
 		let vaild_ele = trackstorke.map((v1)=>Math.sqrt((v1[0]-draw_path[i]["coord"][0])**2+(v1[1]-draw_path[i]["coord"][1])**2)<_self.param.stokeCheckwidth);
@@ -114,7 +136,7 @@ handwrite_practice.prototype.checkStoke = function(){
 	if(last_vaild_line[last_vaild_line.length-1] == false){
 		check_result = false;
 	};
-	
+	*/
 	return check_result;
 };
 
@@ -206,14 +228,20 @@ handwrite_practice.prototype.reset = function(current_stroke=0){
 	_self.hand_write_obj.draw_ctx.globalCompositeOperation = "source-over";
 	_self.current_stoke = current_stroke;
 	_self.back_font_obj.SingleOutline(_self.track_coords.length-1,true);
-	for(var i=0;i<_self.current_stoke;i++){
-		_self.back_font_obj.SingleOutline(i,true,false,"#000");
-	};
+	//for(var i=0;i<_self.current_stoke;i++){
+	//	_self.back_font_obj.SingleOutline(i,true,false,"#000");
+	//};
 	_self.hand_write_obj.clear();
+	if(current_stroke==0){
+		_self.write_path = [];
+	}else{
+		_self.write_path = _self.write_path.slice(0,current_stroke);
+		redraw_path(_self.write_path, _self.hand_write_obj.draw_canvas);
+	};
 	if(_self.current_stoke < _self.track_coords.length){
 		_self.tip_stroke_obj.SingleOutline(_self.current_stoke);
 		_self.hand_write_obj.draw_ctx.drawImage(_self.tip_stroke_obj.back_canvas,0,0,_self.param.wh,_self.param.wh);
-		_self.hand_write_obj.draw_ctx.globalCompositeOperation = "source-atop"; //source-atop | source-over
+		_self.hand_write_obj.draw_ctx.globalCompositeOperation = "source-over"; //source-atop | source-over
 		_self.hand_write_obj.draw_enable = true;
 	};
 };
@@ -237,5 +265,11 @@ handwrite_practice.prototype.distancepathpath = function(path1, path2) {
         };
         sum += minDist;
     };
-    return sum / (path1.length * path2.length * 2)*(200/_self.param["wh"]);
+    return sum / (path1.length * path2.length * 2)*(100/_self.param["wh"]);
+};
+
+handwrite_practice.prototype.pathlength = function(path) {
+	var _self = this;
+	return Object.keys(path).map((k)=>(k>0) ? (Math.sqrt(Math.pow(path[k].coord[0] - path[k-1].coord[0],2) + Math.pow(path[k].coord[1] - path[k-1].coord[1],2))) : 0).reduce((partialSum, a) => partialSum + a, 0)*(100/_self.param["wh"]);
+
 }

@@ -1,4 +1,4 @@
-export {multiplyMatrices, matrixTranspose2D,RemToPixels,getScroll,bopomofo_template,on_end_method,zip,tonal_marks,bopomo_category,makeRequest};
+export {multiplyMatrices, matrixTranspose2D,RemToPixels,getScroll,bopomofo_template,on_end_method,zip,tonal_marks,bopomo_category,makeRequest, redraw_path};
 // 矩陣相乘
 function multiplyMatrices(m1, m2) {
     var result = [];
@@ -144,4 +144,22 @@ var makeRequest = function(opts) {
     };
     xmlHTTP.send(params);
   });
+};
+
+// 在 canvas 上面繪製路徑
+var redraw_path = function(path_list, canvas,linewidth=1, strokestyle='#000000'){
+	var draw_ctx = canvas.getContext('2d');;
+	
+	for(var ipath=0;ipath<path_list.length;ipath++){
+		draw_ctx.beginPath();
+		draw_ctx.moveTo(path_list[ipath][0]["coord"][0], path_list[ipath][0]["coord"][1]);
+		for(var icoords=1;icoords<path_list[ipath].length;icoords++){
+			draw_ctx.lineTo(path_list[ipath][icoords]["coord"][0], path_list[ipath][icoords]["coord"][1]);
+			draw_ctx.strokeStyle = strokestyle;
+			draw_ctx.lineWidth=linewidth;
+			draw_ctx.stroke();
+		};
+		draw_ctx.closePath();
+	};
+	
 };

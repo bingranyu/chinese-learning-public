@@ -1,27 +1,7 @@
 export {create_write_canvas};
-import {getScroll} from "./utility.js";
+import {getScroll, redraw_path} from "./utility.js";
 
-// 待增加參數:
-// 筆畫粗細
-// 筆畫顏色
-// 每筆畫動畫效果
-// 筆畫間的延遲
-var redraw_path = function(path_list, canvas,linewidth=1, strokestyle='#000000'){
-	var draw_ctx = canvas.getContext('2d');;
-	
-	for(var ipath=0;ipath<path_list.length;ipath++){
-		draw_ctx.beginPath();
-		draw_ctx.moveTo(path_list[ipath][0]["coord"][0], path_list[ipath][0]["coord"][1]);
-		for(var icoords=1;icoords<path_list[ipath].length;icoords++){
-			draw_ctx.lineTo(path_list[ipath][icoords]["coord"][0], path_list[ipath][icoords]["coord"][1]);
-			draw_ctx.strokeStyle = strokestyle;
-			draw_ctx.lineWidth=linewidth;
-			draw_ctx.stroke();
-		};
-		draw_ctx.closePath();
-	};
-	
-};
+
 
 var create_write_canvas = function(param){
 	var default_param = {"width":100,"height":100,"stokewidth":null,"strokestyle":"#000000"};
@@ -124,7 +104,7 @@ var create_write_canvas = function(param){
 		};
 	};
 	
-	
+	// 多點觸控時
 	this.draw_canvas.addEventListener('touchstart', function(event) { drawstart(event.touches[0]) }, false);
 	this.draw_canvas.addEventListener('touchmove', function(event) { drawmove(event.touches[0]); event.preventDefault(); }, false);
 	this.draw_canvas.addEventListener('touchend', function(event) { drawend(event.changedTouches[0]) }, false);  	
