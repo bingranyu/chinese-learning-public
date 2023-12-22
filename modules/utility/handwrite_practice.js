@@ -1,6 +1,6 @@
 import * as fontsvg_mod from "./create_svg_font.js";
 import * as hwcanvas_mod from "./create_write_canvas.js";
-import {multiplyMatrices, matrixTranspose2D, redraw_path} from "./utility.js";
+import {multiplyMatrices, matrixTranspose2D, redraw_path, reduce_path} from "./utility.js";
 export {handwrite_practice};
 
 
@@ -79,7 +79,7 @@ var handwrite_practice = function(param){
 	//初始
 	this.tip_stroke_obj.deffered_obj.done(function(){
 		_self.hand_write_obj.draw_ctx.drawImage(_self.tip_stroke_obj.back_canvas,0,0,_self.param.wh,_self.param.wh);
-		_self.hand_write_obj.draw_ctx.globalCompositeOperation = "source-atop";
+		_self.hand_write_obj.draw_ctx.globalCompositeOperation = "source-over"; //source-atop | source-over
 	});
 };
 
@@ -92,51 +92,20 @@ handwrite_practice.prototype.checkStoke = function(){
 	
 	let trackstorke_formated = trackstorke.map((t)=>({"coord":t}));
 	let path_dist = _self.distancepathpath(trackstorke_formated,draw_path);
-	//console.log("check_path_distance",path_dist);
 	let track_len = _self.pathlength(trackstorke_formated);
 	let draw_len = _self.pathlength(draw_path);
-	//console.log("check_path_length",track_len,draw_len,Math.abs(track_len-draw_len)/track_len);
-	//console.log("check_path_length2",track_len,draw_len,Math.abs(track_len-draw_len));
-	
+
 	let s_dist = Math.sqrt(Math.pow(trackstorke_formated[0].coord[0] - draw_path[0].coord[0],2)+Math.pow(trackstorke_formated[0].coord[1] - draw_path[0].coord[1],2));
 	let e_dist = Math.sqrt(Math.pow(trackstorke_formated[0].coord[0] - draw_path[draw_path.length-1].coord[0],2)+Math.pow(trackstorke_formated[0].coord[1] - draw_path[draw_path.length-1].coord[1],2));
 	
-	
+	let reduced_draw_path = reduce_path(draw_path,1);
+	let reduced_draw_len = _self.pathlength(reduced_draw_path);
 	// path_dist*track_len <= 5 or path_dist < 0.15 // 筆畫相似性、及追蹤長度加權
 	// Math.abs(track_len-draw_len) < 10 //差距在格子長寬10%
 	// s_dist < e_dist // 筆畫順序正確
-	var check_result = ((path_dist*track_len <= 5) || (path_dist < 0.15)) && (Math.abs(track_len-draw_len)<10) && (s_dist < e_dist);
-	
-	//console.log(s_dist,e_dist);
-	
+	let check_result = ((path_dist*track_len <= 7) || (path_dist < 0.2)) && ((Math.abs(track_len-reduced_draw_len)<10) || (Math.abs(track_len-reduced_draw_len)/track_len < 0.2)) && (s_dist < e_dist);
+	console.log()
 
-	
-	//console.log("check_path_distance2",path_dist*track_len);
-	
-/*
-	
-	for(var i=0;i<draw_path.length;i++){
-		let vaild_ele = trackstorke.map((v1)=>Math.sqrt((v1[0]-draw_path[i]["coord"][0])**2+(v1[1]-draw_path[i]["coord"][1])**2)<_self.param.stokeCheckwidth);
-		vaild_array = vaild_array.concat([vaild_ele]);
-	};
-	var check_result = true;
-	if(vaild_array[0][0] == false){
-		check_result = false;
-	};
-	for(var i=0;i<(vaild_array.length-1);i++){
-		let min_1 = Math.min(...vaild_array[i].map(function(v,i){return v ? i : null}));
-		let max_1 = Math.max(...vaild_array[i].map(function(v,i){return v ? i : null}));
-		let min_2 = Math.min(...vaild_array[i+1].map(function(v,i){return v ? i : null}));
-		let max_2 = Math.max(...vaild_array[i+1].map(function(v,i){return v ? i : null}));
-		if((min_2 < min_1) || (max_2 < max_1)){
-			check_result = false;
-		};
-	};
-	let last_vaild_line = vaild_array[vaild_array.length-1];
-	if(last_vaild_line[last_vaild_line.length-1] == false){
-		check_result = false;
-	};
-	*/
 	return check_result;
 };
 

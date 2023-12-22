@@ -1,4 +1,4 @@
-export {multiplyMatrices, matrixTranspose2D,RemToPixels,getScroll,bopomofo_template,on_end_method,zip,tonal_marks,bopomo_category,makeRequest, redraw_path};
+export {multiplyMatrices, matrixTranspose2D,RemToPixels,getScroll,bopomofo_template,on_end_method,zip,tonal_marks,bopomo_category,makeRequest, redraw_path, reduce_path};
 // 矩陣相乘
 function multiplyMatrices(m1, m2) {
     var result = [];
@@ -166,11 +166,12 @@ var redraw_path = function(path_list, canvas,linewidth=1, strokestyle='#000000')
 
 
 // 待測試
+// 當完全水平、垂直組合的路徑，會沒有點
 var reduce_path = function(path,abandonFactor=0.05){
 	var slope_arr = [];
 	for(let j=0;j<path.length-1;j++){
-		let {x, y} = path[j], // current point's x and y
-			{x: nx, y: ny} = path[j+1], // next point's x and y
+		let [x, y] = path[j].coord, // current point's x and y
+			[nx, ny] = path[j+1].coord, // next point's x and y
 			dy = (ny - y);
 
 		if(dy === 0) // to check if the denominator is legal or not
@@ -182,7 +183,8 @@ var reduce_path = function(path,abandonFactor=0.05){
     let newpath = [];
 	// calculate the abandonRate base on the amount of the original points
 	let abandonRate = path.length * abandonFactor;
-	for(let j=0;j<slope_arr.length-1;j++){
+	newpath.push(path[0]);
+	for(let j=1;j<slope_arr.length-1;j++){
 		let m = slope_arr[j], // this slope
 			nm = slope_arr[j+1]; // next slope
 		let diffRate = Math.abs((m - nm) / m); // calculate the changes of the slope
@@ -194,5 +196,6 @@ var reduce_path = function(path,abandonFactor=0.05){
 			newpath.push(path[j]);
 		}
 	};
+	newpath.push(path[path.length-1]);
 	return newpath;
-}
+};
