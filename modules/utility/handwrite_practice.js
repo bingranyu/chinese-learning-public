@@ -104,7 +104,8 @@ handwrite_practice.prototype.checkStoke = function(){
 	// Math.abs(track_len-draw_len) < 10 //差距在格子長寬10%
 	// s_dist < e_dist // 筆畫順序正確
 	let check_result = ((path_dist*track_len <= 7) || (path_dist < 0.2)) && ((Math.abs(track_len-reduced_draw_len)<10) || (Math.abs(track_len-reduced_draw_len)/track_len < 0.2)) && (s_dist < e_dist);
-	console.log()
+	//console.log(path_dist*track_len,7);
+	//console.log(path_dist,0.2);
 
 	return check_result;
 };
