@@ -312,6 +312,7 @@ var create_exercise_page = function(word_list, stroke_times, write_times,exercis
 	var word_temp_fn = (add_class='')=> `<div style="width:${exercise_font_size*1.5}cm;height:${exercise_font_size}cm;position: relative;"><div class="word is_symbol_0" style="wedth:${exercise_font_size}cm;height:${exercise_font_size}cm;position: absolute;left: 0cm;top: 0cm;"></div><div class="word is_symbol_1" style="wedth:${exercise_font_size*0.5}cm;height:${exercise_font_size}cm;position: absolute;left: 2cm;top: 0cm;"></div></div>`;
 	
 	//word_temp_fn("word_title")
+	/*
 	let words_container = word_list.map(function(v){
 		let words = v.split('');
 		return words.map(function(v2){
@@ -319,7 +320,7 @@ var create_exercise_page = function(word_list, stroke_times, write_times,exercis
 			});
 	});
 	console.log(words_container);
-	
+	*/
 	
 	let row_temp_fn = (tag,n_col,add_class='')=>'<tr>'+Array.from({length: n_col*2}, (_, i) => `<${tag} style='width:${exercise_font_size - exercise_font_size*0.5*(i%2)}cm;height:${exercise_font_size}cm;' class='word word_${parseInt(i/2)+1} is_symbol_${(i%2)} ${add_class}'></${tag}>`).join('')+'</tr>';
 	// 拆開並轉置
