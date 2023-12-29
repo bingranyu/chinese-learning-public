@@ -81,6 +81,15 @@ var style = $(`
 		top: 0px;
 		z-index: 1;
 	}
+	.words_block {
+		display: inline-block;
+	}
+	.words_row_block {
+		display: inline-grid;
+		grid-row-gap: 3px;
+		margin-right: 5px;
+		vertical-align: top;
+	}
 </style>`);
 style.attr("mod_type","page_mod");
 
@@ -269,22 +278,6 @@ var parents_button_group= $(`
 	<label class="btn btn-outline-primary" for="teacher_mode_toggle"><i class="fa-solid fa-person-chalkboard"></i></label>
 </div>`);
 
-/*
-var get_excerce_book_data_fn = function(){
-	let visible_data = [...$("#edit_exercise_book .exercise_page_area").find(".exercise_page")].map(function(v){
-		let id = $(v).attr("book_id");
-		let title = $(v).find(".book_title").text();
-		let trash_date= null;
-		let words = $(v).find(".exercise_words").val().split(",").map((v)=>v.trim()).filter((v)=>v.length>0);
-		return {"id":id,"title":title,"trash_date":trash_date,"words":words};
-	}).filter((v)=>v.words.length>0);
-	
-	let in_trash_data = JSON.parse(Storage.getItem("exercise_book/exercise_words")).filter((v)=>v.trash_date!==null);
-	let data_array = visible_data.concat(in_trash_data);
-	data_array = [...new Map(data_array.reverse().map(item => [item['id'], item])).values()].reverse();
-	return data_array;
-};
-*/
 
 
 
@@ -309,97 +302,57 @@ var refresh_book_editor_fn = function(){
 var create_exercise_page = function(word_list, stroke_times, write_times,exercise_font_size=2){
 	
 	
-	var word_temp_fn = (add_class='')=> `<div style="width:${exercise_font_size*1.5}cm;height:${exercise_font_size}cm;position: relative;"><div class="word is_symbol_0" style="wedth:${exercise_font_size}cm;height:${exercise_font_size}cm;position: absolute;left: 0cm;top: 0cm;"></div><div class="word is_symbol_1" style="wedth:${exercise_font_size*0.5}cm;height:${exercise_font_size}cm;position: absolute;left: 2cm;top: 0cm;"></div></div>`;
+	var word_temp_fn = (add_class='')=> `<div class="word-cell ${add_class}" style="width:${exercise_font_size*1.5}cm;height:${exercise_font_size}cm;position: relative;"><div class="word is_symbol_0" style="width:${exercise_font_size}cm;height:${exercise_font_size}cm;position: absolute;left: 0cm;top: 0cm;border: 1px solid;"></div><div class="word is_symbol_1" style="width:${exercise_font_size*0.5}cm;height:${exercise_font_size}cm;position: absolute;left: 2cm;top: 0cm;border: 1px solid;"></div></div>`;
 	
 	//word_temp_fn("word_title")
-	
-	let words_container = word_list.map(function(v){
+	let words_container = word_list.reverse().map(function(v){
 		let words = v.split('');
-		let word_title_els = words.map(function(v2){
-				return $(word_temp_fn("word_title")).attr("char-val",v2);
-			});	
-		let word_stroke_els = new Array(parseInt(stroke_times)).fill(words.map(function(v2){
-				return $(word_temp_fn("stroke_practice")).attr("char-val",v2);
+		
+		let word_title_els = [$("<div class='words_block word_title'>").append(words.map(function(v2){
+				return $(word_temp_fn()).attr("char-val",v2);
+			}))];
+		
+		let word_stroke_els = $("<div class='words_block stroke_practice'>").append(words.map(function(v2){
+				return $(word_temp_fn()).attr("char-val",v2);
 			}));
-		let word_write_els = Array(parseInt(write_times)).fill(words.map(function(v2){
-				return $(word_temp_fn("freewrite")).attr("char-val",v2);
+		let word_write_els =$("<div class='words_block freewrite'>").append(words.map(function(v2){
+				return $(word_temp_fn()).attr("char-val",v2);
 			}));
-		return {"title":word_title_els,"stroke":word_stroke_els,"write":word_write_els};
+		let words_row_block = $("<div class='words_row_block'>").append(word_title_els);
+		for(let i=0;i<parseInt(stroke_times);i++){
+			words_row_block.append(word_stroke_els.clone());
+		};
+		for(let i=0;i<parseInt(write_times);i++){
+			words_row_block.append(word_write_els.clone());
+		};
+		return words_row_block;
 	});
-	console.log(words_container);
+	//console.log(words_container);
 	
-	
-	let row_temp_fn = (tag,n_col,add_class='')=>'<tr>'+Array.from({length: n_col*2}, (_, i) => `<${tag} style='width:${exercise_font_size - exercise_font_size*0.5*(i%2)}cm;height:${exercise_font_size}cm;' class='word word_${parseInt(i/2)+1} is_symbol_${(i%2)} ${add_class}'></${tag}>`).join('')+'</tr>';
-	// 拆開並轉置
-	let word_list_t = zip(word_list.map(v=>v.split('')));
-	let char_num = Math.max(...word_list.map(v=>v.length));
-	
-
-	
-	// 建立頁面
-	var exercise_page = $("<table class='exercise_page'>");
+	var exercise_page = $("<div class='exercise_page'>");
 	var exercise_student_page = $("<div class='exercise_student_page'>");
 	var exercise_teacher_page = $("<div class='exercise_teacher_page'>");
-	var exercise_student_table = $("<table class='exercise_student_table'>");
+	var exercise_student_table = $("<div class='exercise_student_table'>");
 	exercise_student_page.append(exercise_student_table);
 	exercise_page.append(exercise_student_page,exercise_teacher_page);
+	exercise_student_table.append(words_container);
 	
-	exercise_student_table.append(["<thead>","<tbody>"]);
-	// 標題(題目)
-	let word_titles = word_list_t.map(function(v){
-		let th_tmp = $(row_temp_fn("th",v.length,"word_title"));
-		for(let iw=0;iw<v.length;iw++){
-			th_tmp.find('.word_'+String(iw+1)).attr("char-val",v[iw]);
-		};
-		
-		return th_tmp;
-	});
-	exercise_student_table.find("thead").append(word_titles);
-	// 筆畫練習
-	let stroke_el_tmp = word_list_t.map(function(v){
-		let td_tmp = $(row_temp_fn("td",v.length,"stroke_practice"));
-		for(let iw=0;iw<v.length;iw++){
-			td_tmp.find('.word_'+String(iw+1)).attr("char-val",v[iw]);
-		};
-		return td_tmp;
-	});
-	let stroke_el = [];
-	for(let i=0;i<stroke_times;i++){
-		for(let j=0;j<stroke_el_tmp.length;j++){
-			stroke_el.push(stroke_el_tmp[j][0].cloneNode(true));
-		};
-	};
-	exercise_student_table.find("tbody").append(stroke_el);
-	//自由寫字
-	let freewrite_tmp = word_list_t.map(function(v){
-		let td_tmp = $(row_temp_fn("td",v.length,"freewrite"));
-		for(let iw=0;iw<v.length;iw++){
-			td_tmp.find('.word_'+String(iw+1)).attr("char-val",v[iw]);
-		};
-		return td_tmp;
-	});
-	let freewrite_el = [];
-	for(let i=0;i<write_times;i++){
-		for(let j=0;j<freewrite_tmp.length;j++){
-			freewrite_el.push(freewrite_tmp[j][0].cloneNode(true));
-		};
-	};
-	exercise_student_table.find("tbody").append(freewrite_el);
+	
 	
 	exercise_page.one("append",function(e){
 		var control_layer_div = "<div class='write_control_layer'></div>";
-		let font_width = $(exercise_student_table.find("th.word.word_1.is_symbol_0")[0]).width();
+		let font_width = $(exercise_student_table.find("div.word.is_symbol_0")[0]).width();
 		// 標題(題目)
-		exercise_student_table.find("th.word_title.is_symbol_0").each(function(i,v){
-			let t = new create_svg_font($(v).attr("char-val"),{'wh':font_width});
+		exercise_student_table.find("div.word_title .is_symbol_0").each(function(i,v){
+			let t = new create_svg_font($(v).parent('.word-cell').attr("char-val"),{'wh':font_width});
 			t.deffered_obj.then(function(){
 				$(v).html(t.back_canvas);
 			});
 			$(v).data("exercise_object",t);
 		});
 		// 筆畫練習
-		exercise_student_table.find("td.stroke_practice.is_symbol_0").each(function(i,v){
-			let t = new handwrite_practice({'font_str':$(v).attr("char-val"),'wh':font_width});
+		exercise_student_table.find("div.stroke_practice .is_symbol_0").each(function(i,v){
+			let t = new handwrite_practice({'font_str':$(v).parent('.word-cell').attr("char-val"),'wh':font_width});
 			t.back_font_obj.deffered_obj.then(function(){
 				$(v).html([t.practice_div,control_layer_div]);
 			});
@@ -407,13 +360,13 @@ var create_exercise_page = function(word_list, stroke_times, write_times,exercis
 		});
 
 		// 自由寫字
-		exercise_student_table.find("td.freewrite.is_symbol_0").each(function(i,v){
+		exercise_student_table.find("div.freewrite .is_symbol_0").each(function(i,v){
 			let t = new create_write_canvas({"width":font_width,"height":font_width});
 			t.draw_enable=true;
 			$(v).html([t.draw_canvas,control_layer_div]);
 			$(v).data("exercise_object",t);
 		});
-		exercise_student_table.find("td.freewrite.is_symbol_1").each(function(i,v){
+		exercise_student_table.find("div.freewrite .is_symbol_1").each(function(i,v){
 			let t = new create_write_canvas({"width":parseInt(font_width/2),"height":font_width});
 			t.draw_enable=true;
 			$(v).html([t.draw_canvas,control_layer_div]);
@@ -422,24 +375,19 @@ var create_exercise_page = function(word_list, stroke_times, write_times,exercis
 		
 		// 預測注音
 		g2pw.Warmup_check.then(function(){
-			var bopomo_deferred = [];
-			for(var i=0;i<word_list.length;i++){
-				bopomo_deferred.push(g2pw.predict(word_list[i]));
-			};
-			$.when(...bopomo_deferred).done(function(...bopomo_list){
-				var bopomo_list_t = bopomo_list[0].map((_, colIndex) => bopomo_list.map(row => row[colIndex]));
-				var tr_els = $("thead > tr");
-				for(var ix=0;ix<bopomo_list_t.length;ix++){
-					var th_els = $(tr_els[ix]).find("th.word_title.is_symbol_1");
-					for(var iy=0;iy<th_els.length;iy++){
-						let bopomo_val = bopomo_list_t[ix][iy];
-						bopomo_val = bopomo_val.replace('1','').replace('2','ˊ').replace('3','ˇ').replace('4','ˋ').replace('5','˙');
-						$(th_els[iy]).attr("char-val",bopomo_val);
+			
+			[...$("div.word_title")].forEach(function(v1){
+				let word = [...$(v1).find(".word-cell")].map(v2=>$(v2).attr('char-val')).join('');
+				g2pw.predict(word).then(function(data){
+					[...$(v1).find(".word-cell")].forEach(function(v2,i2){
+						let bopomo_val = data[i2].replace('1','').replace('2','ˊ').replace('3','ˇ').replace('4','ˋ').replace('5','˙');
 						let t = new create_svg_bopomo(bopomo_val,{'wh':font_width});
-						$(th_els[iy]).html(t.back_canvas);
-					};
-				};
+						$(v2).find(".word.is_symbol_1").html(t.back_canvas);
+						//$(v2).find(".word.is_symbol_1")
+					});
+				});
 			});
+			
 		});
 		
 		// 改作業區域
@@ -493,11 +441,11 @@ var on_complete = function(){
 	// 橡皮擦
 	$(exercise_block).on("click",".write_control_layer",function(e){
 		if($(control_button_toolbar).find(".control_button_group button.eraser").hasClass("active")){
-			let parent_td = $(e.currentTarget).parent("td");
-			if(parent_td.is('.word.freewrite')){
-				parent_td.data("exercise_object").clear();
-			}else if(parent_td.is('.word.stroke_practice')){
-				parent_td.data("exercise_object").reset();
+			let parent_div = $(e.currentTarget).parent("div.word.is_symbol_0");
+			if(parent_div.closest(".words_block").is('.freewrite')){
+				parent_div.data("exercise_object").clear();
+			}else if(parent_div.closest(".words_block").is('.stroke_practice')){
+				parent_div.data("exercise_object").reset();
 			};
 		};
 	});
