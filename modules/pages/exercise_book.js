@@ -302,7 +302,7 @@ var refresh_book_editor_fn = function(){
 var create_exercise_page = function(word_list, stroke_times, write_times,exercise_font_size=2){
 	
 	
-	var word_temp_fn = (add_class='')=> `<div class="word-cell ${add_class}" style="width:${exercise_font_size*1.5}cm;height:${exercise_font_size}cm;position: relative;"><div class="word is_symbol_0" style="width:${exercise_font_size}cm;height:${exercise_font_size}cm;position: absolute;left: 0cm;top: 0cm;border: 1px solid;"></div><div class="word is_symbol_1" style="width:${exercise_font_size*0.5}cm;height:${exercise_font_size}cm;position: absolute;left: 2cm;top: 0cm;border: 1px solid;"></div></div>`;
+	var word_temp_fn = (add_class='')=> `<div class="word-cell ${add_class}" style="width:${exercise_font_size*1.5}cm;height:${exercise_font_size}cm;position: relative;"><div class="word is_symbol_0" style="width:${exercise_font_size}cm;height:${exercise_font_size}cm;border: 1px solid;display: inline-block;"></div><div class="word is_symbol_1" style="width:${exercise_font_size*0.5}cm;height:${exercise_font_size}cm;border: 1px solid;display: inline-block;"></div></div>`;
 	
 	//word_temp_fn("word_title")
 	let words_container = word_list.reverse().map(function(v){
@@ -531,7 +531,7 @@ var on_complete = function(){
 
 document.querySelector("#content").addEventListener('touchstart', function(event) { 
 	console.log([...event.touches].map((e)=>[e.radiusX,e.radiusY]));
-	alert([...event.touches].map((e)=>[e.radiusX,e.radiusY]).map(v1=>v1.join(',')).join(' / '));
+	//alert([...event.touches].map((e)=>[e.radiusX,e.radiusY]).map(v1=>v1.join(',')).join(' / '));
 }, false);
 //this.draw_canvas.addEventListener('touchstart', function(event) { drawstart(event.touches[0]) }, false);
 //this.draw_canvas.addEventListener('touchmove', function(event) { drawmove(event.touches[0]); event.preventDefault(); }, false);
