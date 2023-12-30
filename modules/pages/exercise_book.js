@@ -529,3 +529,10 @@ var on_complete = function(){
 };
 
 
+document.querySelector("#content").addEventListener('touchstart', function(event) { 
+	console.log([...event.touches].map((e)=>[e.radiusX,e.radiusY]));
+	alert([...event.touches].map((e)=>[e.radiusX,e.radiusY]).map(v1=>v1.join(',')).join(' / '));
+}, false);
+//this.draw_canvas.addEventListener('touchstart', function(event) { drawstart(event.touches[0]) }, false);
+//this.draw_canvas.addEventListener('touchmove', function(event) { drawmove(event.touches[0]); event.preventDefault(); }, false);
+//this.draw_canvas.addEventListener('touchend', function(event) { drawend(event.changedTouches[0]) }, false); 
