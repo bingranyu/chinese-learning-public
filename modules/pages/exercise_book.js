@@ -40,7 +40,9 @@ var style = $(`
 		display: block;
 	}
 	.exercise_block {
-		width: fit-content;
+		width: 100%;
+		height: 100%;
+		overflow: scroll;
 		padding: 20px 20px 50px 50px;
 		margin-left: auto;
 		background-color: #fff;
@@ -90,8 +92,8 @@ var style = $(`
 		margin-right: 5px;
 		vertical-align: top;
 	}
-	#content {
-		overflow: scroll;
+	.exercise_page {
+		width: max-content;
 	}
 </style>`);
 style.attr("mod_type","page_mod");
@@ -455,9 +457,9 @@ var on_complete = function(){
 	
 	
 	$(".download_book_img").on("click",function(e){
-		html2canvas($(".exercise_block")[0]).then(canvas => {
+		html2canvas($(".exercise_page")[0]).then(canvas => {
 		  var link = document.createElement('a');
-		  link.download = 'exercise_block.png';
+		  link.download = 'exercise_page.png';
 		  link.href = canvas.toDataURL();
 		  link.click();
 		});
@@ -532,8 +534,11 @@ var on_complete = function(){
 };
 
 
-document.querySelector("#content").addEventListener('touchstart', function(event) { 
-	console.log([...event.touches].map((e)=>[e.radiusX,e.radiusY]));
+exercise_block[0].addEventListener('touchstart', function(event) { 
+	console.log([...event.touches].map((e)=>[e.radiusX,e.radiusY]).flat());
+	if([...event.touches].map((e)=>[e.radiusX,e.radiusY]).flat().some((v)=>v>30)){
+		event.preventDefault();
+	}
 	//alert([...event.touches].map((e)=>[e.radiusX,e.radiusY]).map(v1=>v1.join(',')).join(' / '));
 }, false);
 //this.draw_canvas.addEventListener('touchstart', function(event) { drawstart(event.touches[0]) }, false);
