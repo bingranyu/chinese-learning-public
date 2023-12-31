@@ -90,6 +90,9 @@ var style = $(`
 		margin-right: 5px;
 		vertical-align: top;
 	}
+	#content {
+		overflow: scroll;
+	}
 </style>`);
 style.attr("mod_type","page_mod");
 
