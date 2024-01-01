@@ -43,6 +43,7 @@ var style = $(`
 		width: 100%;
 		height: 100%;
 		overflow: scroll;
+		-webkit-overflow-scrolling: touch;
 		padding: 20px 20px 50px 50px;
 		margin-left: auto;
 		background-color: #fff;
