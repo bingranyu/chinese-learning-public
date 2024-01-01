@@ -538,7 +538,7 @@ var on_complete = function(){
 exercise_block[0].addEventListener('touchstart', function(event) { 
 	console.log([...event.touches].map((e)=>[e.radiusX,e.radiusY]).flat());
 	if([...event.touches].map((e)=>[e.radiusX,e.radiusY]).flat().some((v)=>v>30)){
-		event.preventDefault();
+		//event.preventDefault();
 	}
 	//alert([...event.touches].map((e)=>[e.radiusX,e.radiusY]).map(v1=>v1.join(',')).join(' / '));
 }, false);
