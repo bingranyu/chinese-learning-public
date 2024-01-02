@@ -10,27 +10,6 @@ var mod_name = "exercise_book";
 
 var style = $(`
 <style>
-	table.exercise_student_table {
-		white-space:nowrap;
-	}
-	table.exercise_student_table,table.exercise_student_table tr,table.exercise_student_table th,table.exercise_student_table td {
-	  border: solid 1px black;
-	  padding: 0px;
-	}
-	table.exercise_student_table .word.is_symbol_0 {
-	  width:2cm;
-	  height:2cm;
-	}
-	table.exercise_student_table .word.is_symbol_1 {
-	  width:1cm;
-	  height:2cm;
-	}
-	table.exercise_student_table th, .exercise_student_table td {
-	  display: inline-block;
-	}
-	table.exercise_student_table td {
-	  position: relative;
-	}
 	.write_control_layer {
 		width: 100%;
 		height: 100%;
@@ -308,7 +287,7 @@ var refresh_book_editor_fn = function(){
 var create_exercise_page = function(word_list, stroke_times, write_times,exercise_font_size=2){
 	
 	
-	var word_temp_fn = (add_class='')=> `<div class="word-cell ${add_class}" style="width:${exercise_font_size*1.5}cm;height:${exercise_font_size}cm;position: relative;"><div class="word is_symbol_0" style="width:${exercise_font_size}cm;height:${exercise_font_size}cm;border: 1px solid;display: inline-block;"></div><div class="word is_symbol_1" style="width:${exercise_font_size*0.5}cm;height:${exercise_font_size}cm;border: 1px solid;display: inline-block;"></div></div>`;
+	var word_temp_fn = (add_class='')=> `<div class="word-cell ${add_class}" style="width:${exercise_font_size*1.5}cm;height:${exercise_font_size}cm;position: relative;"><div class="word is_symbol_0" style="position: relative;width:${exercise_font_size}cm;height:${exercise_font_size}cm;border: 1px solid;display: inline-block;"></div><div class="word is_symbol_1" style="position: relative;width:${exercise_font_size*0.5}cm;height:${exercise_font_size}cm;border: 1px solid;display: inline-block;"></div></div>`;
 	
 	//word_temp_fn("word_title")
 	let words_container = word_list.reverse().map(function(v){
@@ -448,6 +427,7 @@ var on_complete = function(){
 	$(exercise_block).on("click",".write_control_layer",function(e){
 		if($(control_button_toolbar).find(".control_button_group button.eraser").hasClass("active")){
 			let parent_div = $(e.currentTarget).parent("div.word.is_symbol_0");
+			console.log(e.currentTarget);
 			if(parent_div.closest(".words_block").is('.freewrite')){
 				parent_div.data("exercise_object").clear();
 			}else if(parent_div.closest(".words_block").is('.stroke_practice')){
