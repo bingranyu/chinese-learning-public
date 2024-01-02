@@ -1,5 +1,6 @@
-import {g2pw_vocab, g2pw_labels, g2pw_monophonic_chars, g2pw_polyphonic_chars,g2pw_char2phonemes} from './../../modules/utility/g2pw_info.js';
+import {g2pw_labels, g2pw_monophonic_chars, g2pw_polyphonic_chars,g2pw_char2phonemes} from './model_info/model_info.js';
 import {makeRequest} from './../../modules/utility/utility.js';
+import {convert_tokens_to_ids} from './model_utility.js';
 //import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.2/dist/ort.es6.min.js';
 export {Warmup_check, predict};
 //console.log(ort);
@@ -89,19 +90,7 @@ var wordize_and_map = function(t){
 };
 
 
-var convert_tokens_to_ids = function(tokens){
-	let processed_tokens = tokens;
-	processed_tokens.unshift('[CLS]');
-	processed_tokens.push('[SEP]');
-	var input_ids = processed_tokens.map(function(v){
-		if(v in g2pw_vocab){
-			return g2pw_vocab[v];
-		}else{
-			return g2pw_vocab['[UNK]'];
-		};
-	});
-	return input_ids;
-};
+
 
 var text_getitem = function(text, query_id){
 	let [words, text2word, word2text] = wordize_and_map(text);
@@ -241,7 +230,6 @@ async function predict(sent) {
 	for(let i=0;i<tquery_ids.length;i++){
 		partial_result[tquery_ids[i]] = preds[i];
 	};
-	
 	return partial_result;
 }
 
